@@ -1,0 +1,224 @@
+[
+  {
+    "title": "Gebäude",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis_gebaeude",
+    "typename": "alkis_gebaeude:gebaeude"
+  },
+  {
+    "title": "Gebäude",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis_gebaeude",
+    "typename": "gebaeude"
+  },
+  {
+    "title": "Objekte der Objektart Existierende Bodennutzung nach dem Hierarchical INSPIRE Land Use Classification System auf der fachlich zutreffendsten Gliederungsebene",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/elu_alkis",
+    "typename": "LU.ExistingLandUse"
+  },
+  {
+    "title": "ALKIS Berlin Bauwerke",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:bauwerkeflaechen"
+  },
+  {
+    "title": "ALKIS Berlin Bauwerke (Linien)",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:bauwerkelinien"
+  },
+  {
+    "title": "ALKIS Berlin Besondere Flurstücksgrenzen",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:besondereflurstuecksgrenzen"
+  },
+  {
+    "title": "ALKIS Berlin Bezirk",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:bezirk"
+  },
+  {
+    "title": "ALKIS Berlin Flur",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:flur"
+  },
+  {
+    "title": "ALKIS Berlin Flurstücke",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:flurstuecke"
+  },
+  {
+    "title": "ALKIS Berlin Gebäude",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:gebaeudeflaechen"
+  },
+  {
+    "title": "ALKIS Berlin Gebäude (Linien)",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:gebaeudelinien"
+  },
+  {
+    "title": "ALKIS Berlin Gemarkung",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:gemarkung"
+  },
+  {
+    "title": "ALKIS Berlin Gewässer- und Vegetationsflächen",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:gewaesservegetationflaechen"
+  },
+  {
+    "title": "ALKIS Berlin Land",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:land"
+  },
+  {
+    "title": "ALKIS Berlin Ortsteil",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:ortsteile"
+  },
+  {
+    "title": "ALKIS Berlin Rechtliche Festlegungen",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:festlegungenflaechen"
+  },
+  {
+    "title": "ALKIS Berlin Relief (Geländekante)",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:relief"
+  },
+  {
+    "title": "ALKIS Berlin Tatsächliche Nutzung",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:tatsaechlichenutzungflaechen"
+  },
+  {
+    "title": "ALKIS Berlin Vegetation (Linien)",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:gewaesservegetationlinien"
+  },
+  {
+    "title": "ALKIS Berlin Vegetation (Punkte)",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis",
+    "typename": "alkis:vegetationpunkte"
+  },
+  {
+    "title": "Bezirksgrenzen",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis_bezirke",
+    "typename": "alkis_bezirke:bezirksgrenzen"
+  },
+  {
+    "title": "Bodenbedeckungsflächen",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/lc_alkis",
+    "typename": "LC.LandCoverSurfaces"
+  },
+  {
+    "title": "Landesgrenze",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis_land",
+    "typename": "landesgrenze"
+  },
+  {
+    "title": "Geografische Bezeichnungen",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/gn_alkis",
+    "typename": "GN.GeographicalNames"
+  },
+  {
+    "title": "Ortsteile",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis_ortsteile",
+    "typename": "ortsteile"
+  },
+  {
+    "title": "Flurstücke",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis_flurstuecke",
+    "typename": "alkis_flurstuecke:flurstuecke"
+  },
+  {
+    "title": "Ortsteile",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis_ortsteile",
+    "typename": "alkis_ortsteile:ortsteile"
+  },
+  {
+    "title": "Landesgrenze",
+    "protocol": "WFS",
+    "url": "https://gdi.berlin.de/services/wfs/alkis_land",
+    "typename": "alkis_land:landesgrenze"
+  },
+  {
+    "title": "Bezirksgrenzen",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis_bezirke",
+    "typename": "bezirksgrenzen"
+  },
+  {
+    "title": "ALKIS Berlin (Darstellung)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "a_alkis_raster"
+  },
+  {
+    "title": "ALKIS Berlin s/w (Darstellung)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "a_alkis_raster_sw"
+  },
+  {
+    "title": "ALKIS Berlin Gebäude (Sachdaten)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "b_alkis_gebaeude_sd"
+  },
+  {
+    "title": "ALKIS Berlin Bauwerke (Sachdaten)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "c_alkis_bauwerke_sd"
+  },
+  {
+    "title": "ALKIS Berlin Rechtliche Festlegungen (Sachdaten)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "d_alkis_rechtliche_festlegungen_sd"
+  },
+  {
+    "title": "ALKIS Berlin Flurstücke (Sachdaten)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "e_alkis_flurstuecke_sd"
+  },
+  {
+    "title": "ALKIS Berlin Tatsächliche Nutzung (Sachdaten)",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis",
+    "typename": "f_alkis_tatsaechliche_nutzung_sd"
+  },
+  {
+    "title": "Flurstücke",
+    "protocol": "WMS",
+    "url": "https://gdi.berlin.de/services/wms/alkis_flurstuecke",
+    "typename": "flurstuecke"
+  }
+]
