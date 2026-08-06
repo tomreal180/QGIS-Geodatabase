@@ -4,17 +4,17 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 
-def _build_ssl_context(verify_ssl=True):
-    if not verify_ssl:
-        return ssl._create_unverified_context()
+# def _build_ssl_context(verify_ssl=True):
+#     if not verify_ssl:
+#         return ssl._create_unverified_context()
 
-    try:
-        import certifi
+#     try:
+#         import certifi
 
-        return ssl.create_default_context(cafile=certifi.where())
-    except Exception:
-        # Fallback to system trust store if certifi is unavailable.
-        return ssl.create_default_context()
+#         return ssl.create_default_context(cafile=certifi.where())
+#     except Exception:
+#         # Fallback to system trust store if certifi is unavailable.
+#         return ssl.create_default_context()
 
 
 def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30):
@@ -36,7 +36,7 @@ def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30
         req = urllib.request.Request(capabilities_url, headers={'User-Agent': 'Mozilla/5.0'})
         response = urllib.request.urlopen(
             req,
-            context=_build_ssl_context(verify_ssl=verify_ssl),
+            context=ssl.SSLContext(),
             timeout=timeout,
         )
 
@@ -69,14 +69,13 @@ def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30
         reason = getattr(e, "reason", None)
         if isinstance(reason, ssl.SSLCertVerificationError):
             print(
-                f"Lỗi SSL khi tải {base_url}: {reason}. "
-                "Hãy cài certifi (pip install certifi) hoặc cập nhật chứng chỉ hệ thống."
+                f"SSL Certificate error when accessing {base_url}: {reason}."
             )
         else:
-            print(f"Lỗi khi tải {base_url}: {e}")
+            print(f"Error accessing {base_url}: {e}")
         return []
     except Exception as e:
-        print(f"Lỗi khi tải {base_url}: {e}")
+        print(f"Error accessing {base_url}: {e}")
         return []
 
 # # --- CHẠY THỬ VỚI WFS BERLIN ---

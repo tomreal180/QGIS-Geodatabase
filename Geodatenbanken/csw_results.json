@@ -1,77 +1,36 @@
 [
   {
-    "title": "ALKIS Berlin Bezirke",
-    "protocol": "WFS",
-    "url": "https://gdi.berlin.de/services/wfs/alkis_bezirke?request=GetCapabilities&service=WFS"
+    "id": "824441cb-3c4d-4647-ba26-9b6cdbf10aad",
+    "title": "Flächenpotenziale für dezentrale Versickerungsmaßnahmen (Umweltatlas)",
+    "services": [
+      {
+        "protocol": "WMS",
+        "url": "https://gdi.berlin.de/services/wms/amarex_potenziale?request=GetCapabilities&service=WMS"
+      },
+      {
+        "protocol": "WFS",
+        "url": "https://gdi.berlin.de/services/wfs/amarex_potenziale?request=GetCapabilities&service=WFS"
+      }
+    ]
   },
   {
-    "title": "ALKIS Berlin Bezirke",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/alkis_bezirke?request=GetCapabilities&service=WMS"
+    "id": "291e4499-cd6f-3297-bdbb-6b78230281d6",
+    "title": "Flächenpotenziale für dezentrale Versickerungsmaßnahmen (Umweltatlas)",
+    "services": [
+      {
+        "protocol": "WFS",
+        "url": "https://gdi.berlin.de/services/wfs/amarex_potenziale?request=GetCapabilities&service=WFS"
+      }
+    ]
   },
   {
-    "title": "Existierende Bodennutzung im INSPIRE-Datenmodell (ALKIS)",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/elu_alkis?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "ALKIS Berlin Gebäude",
-    "protocol": "WFS",
-    "url": "https://gdi.berlin.de/services/wfs/alkis_gebaeude?request=GetCapabilities&service=WFS"
-  },
-  {
-    "title": "ALKIS Berlin Ortsteile",
-    "protocol": "WFS",
-    "url": "https://gdi.berlin.de/services/wfs/alkis_ortsteile?request=GetCapabilities&service=WFS"
-  },
-  {
-    "title": "ALKIS Berlin (Amtliches Liegenschaftskatasterinformationssystem)",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/alkis?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "ALKIS Berlin Flurstücke",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/alkis_flurstuecke?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "ALKIS Berlin Ortsteile",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/alkis_ortsteile?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "ALKIS Berlin Landesgrenze",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/alkis_land?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "ALKIS Berlin Gebäude",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/alkis_gebaeude?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "ALKIS Berlin (Amtliches Liegenschaftskatasterinformationssystem)",
-    "protocol": "WFS",
-    "url": "https://gdi.berlin.de/services/wfs/alkis?request=GetCapabilities&service=WFS"
-  },
-  {
-    "title": "ALKIS Berlin Landesgrenze",
-    "protocol": "WFS",
-    "url": "https://gdi.berlin.de/services/wfs/alkis_land?request=GetCapabilities&service=WFS"
-  },
-  {
-    "title": "ALKIS Berlin Flurstücke",
-    "protocol": "WFS",
-    "url": "https://gdi.berlin.de/services/wfs/alkis_flurstuecke?request=GetCapabilities&service=WFS"
-  },
-  {
-    "title": "Geografische Bezeichnungen im INSPIRE-Datenmodell (ALKIS)",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/gn_alkis?request=GetCapabilities&service=WMS"
-  },
-  {
-    "title": "Bodenbedeckung im INSPIRE-Datenmodell (ALKIS)",
-    "protocol": "WMS",
-    "url": "https://gdi.berlin.de/services/wms/lc_alkis?request=GetCapabilities&service=WMS"
+    "id": "e5704298-b378-3e43-9773-bb8512ddd07a",
+    "title": "Flächenpotenziale für dezentrale Versickerungsmaßnahmen (Umweltatlas)",
+    "services": [
+      {
+        "protocol": "WMS",
+        "url": "https://gdi.berlin.de/services/wms/amarex_potenziale?request=GetCapabilities&service=WMS"
+      }
+    ]
   }
 ]

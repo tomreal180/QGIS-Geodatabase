@@ -1,10 +1,12 @@
 import json
+import os
+import inspect
 import sys
 from pathlib import Path
 
 from owslib.csw import CatalogueServiceWeb
 from owslib.fes import PropertyIsGreaterThanOrEqualTo, PropertyIsLessThanOrEqualTo, And, PropertyIsLike
-
+from owslib.util import Authentication
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -61,9 +63,48 @@ def save_results_to_json(results, file_name="csw_results.json"):
     print(f"\nSaved {len(results)} results to {output_path}")
 
 
+def _resolve_csw_verify():
+    if os.getenv("CSW_INSECURE_SKIP_VERIFY", "").strip().lower() in {"1", "true", "yes"}:
+        return False
+
+    try:
+        import certifi
+
+        return certifi.where()
+    except Exception:
+        return True
+
+
+def _create_csw_client(csw_url, timeout=10):
+    verify = _resolve_csw_verify()
+    kwargs = {}
+
+    try:
+        sig = inspect.signature(CatalogueServiceWeb)
+        supported = set(sig.parameters.keys())
+    except (TypeError, ValueError):
+        supported = set()
+
+    if "auth" in supported:
+        kwargs["auth"] = Authentication(verify=verify)
+    if "verify" in supported:
+        kwargs["verify"] = verify
+    if "timeout" in supported:
+        kwargs["timeout"] = timeout
+
+    if kwargs:
+        return CatalogueServiceWeb(csw_url, **kwargs)
+
+    # Last-resort compatibility path for very old OWSLib versions.
+    try:
+        return CatalogueServiceWeb(csw_url, timeout=timeout)
+    except TypeError:
+        return CatalogueServiceWeb(csw_url)
+
+
 def fetch_csw_services(keyword=None):
     csw_url = 'https://gdi.berlin.de/geonetwork/srv/ger/csw'
-    csw = CatalogueServiceWeb(csw_url)
+    csw = CatalogueServiceWeb(csw_url, auth=Authentication(verify=False), timeout=10)
 
     print(f"Đã kết nối CSW phiên bản {csw.version}")
 
@@ -121,3 +162,4 @@ def fetch_csw_services(keyword=None):
 if __name__ == "__main__":
     # Ví dụ: tìm các bản ghi có từ "Alkis" trong tiêu đề
     fetch_csw_services(keyword="Flächenpotenziale")
+    

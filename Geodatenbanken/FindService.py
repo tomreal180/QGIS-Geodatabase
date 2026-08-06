@@ -4,12 +4,13 @@ from pathlib import Path
 
 from owslib.csw import CatalogueServiceWeb
 from owslib.fes import PropertyIsGreaterThanOrEqualTo, PropertyIsLessThanOrEqualTo, And, PropertyIsLike
+from owslib.util import Authentication
 from test_extrac import extract_ogc_layers
 
 def fetch_csw_services(city_name=None, keyword=None):
     service_urls = json.loads(Path("Service_url.json").read_text(encoding="utf-8"))
     csw_url = service_urls.get(city_name)
-    csw = CatalogueServiceWeb(csw_url)
+    csw = CatalogueServiceWeb(csw_url, auth=Authentication(verify=False), timeout=10)
 
     if keyword:
         title_filter = PropertyIsLike(propertyname="dc:title", literal=f"%{keyword}%", wildCard="%")
@@ -92,10 +93,10 @@ def get_extracted_layers(city_name, keyword=None):
                     "url": base_url,
                     "typename": typename
                 })
-                print(f"   - Hiển thị (Title): {title}")
+                print(f"   -  Title: {title}")
                 print(f"     Service Type (protocol): {protocol}")
-                print(f"     Tên kỹ thuật (Typename): {typename}\n")
-                print(f"     URL gốc: {base_url}\n")
+                print(f"     Type name (Typename): {typename}\n")
+                print(f"     URL: {base_url}\n")
         else:
             print(f"   Không tìm thấy layer nào tại {url}.")
 

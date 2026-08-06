@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/ten_module_cua_ban" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
