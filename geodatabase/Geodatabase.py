@@ -200,6 +200,7 @@ class Geodatabase:
             self.dlg.label_5.hide()  # Hide the "No results found" label
             self.dlg.tableWidget.show()  # Show the table view when there are results
             self.dlg.label_3.show()  # Show the label when there are results
+            self.dlg.pushButton_2.show()  # Show the "Load Selected Layers" button when there are results
             self.dlg.tableWidget.setRowCount(len(results))
             for row, data in enumerate(results):
                 title = data["title"]
@@ -211,13 +212,49 @@ class Geodatabase:
                 self.dlg.tableWidget.setItem(row, 2, QTableWidgetItem(typename))
                 self.dlg.tableWidget.setItem(row, 3, QTableWidgetItem(url))
         else:
+            self.dlg.tableWidget.setRowCount(0)  # Clear the table if there are no results
             self.dlg.label_5.show()  # Show the "No results found" label
             self.dlg.tableWidget.hide()  # Hide the table view when there are no results
             self.dlg.label_3.hide()  # Hide the label when there are no results
+            self.dlg.pushButton_2.hide()  # Hide the "Load Selected Layers" button when there are no results
 
-    def load_selected_layers(self):
+        self.update_total_count()  # Update the total count labels after search
+
+    def toggle_search_button(self):
+        selected_rows = len(self.dlg.tableWidget.selectionModel().selectedRows())
+
+        if selected_rows > 0:
+            self.dlg.pushButton_2.setEnabled(True)
+            self.dlg.pushButton_2.setText(f"Wählen ({selected_rows})")  # Update button text with the number of selected rows
+        else:
+            self.dlg.pushButton_2.setEnabled(False)
+            self.dlg.pushButton_2.setText("Wählen")  # Reset button text when no rows are selected
+
+    def toggle_remove_button(self):
+            selected_rows = len(self.dlg.tableWidget_2.selectionModel().selectedRows())
+    
+            if selected_rows > 0:
+                self.dlg.pushButton_3.setEnabled(True)
+                self.dlg.pushButton_3.setText(f"Entfernen ({selected_rows})")  # Update button text with the number of selected rows
+            else:
+                self.dlg.pushButton_3.setEnabled(False)
+                self.dlg.pushButton_3.setText("Entfernen")  # Reset button text when no rows are selected
+
+    def update_total_count(self):
+        total_selected_rows = self.dlg.tableWidget_2.rowCount()
+        total_available_rows = self.dlg.tableWidget.rowCount()
+        if total_selected_rows > 0:
+            self.dlg.label_6.setText(f"Gewählte Daten (Gesamtzahl: {total_selected_rows}):") # Update button text with the total number of rows
+        else:
+            self.dlg.label_6.setText("Gewählte Daten:")
+
+        if total_available_rows > 0:
+            self.dlg.label_3.setText(f"Verfügbare Daten (Gesamtzahl: {total_available_rows}):")
+        else:
+            self.dlg.label_3.setText("Verfügbare Daten:")
+
+    def add_selected_to_Queue(self):
         selected_rows = self.dlg.tableWidget.selectionModel().selectedRows()
-        crs = self.dlg.mQgsProjectionSelectionWidget.crs().authid()
         for row in selected_rows:
             title_item = self.dlg.tableWidget.item(row.row(), 0)
             protocol_item = self.dlg.tableWidget.item(row.row(), 1)
@@ -230,21 +267,79 @@ class Geodatabase:
                 typename = typename_item.text()
                 url = url_item.text()
 
-                # Load the layer based on the protocol
-                if protocol == "WMS":
-                    uri = f"crs={crs}&dpiMode=7&featureCount=10&format=image/png&layers={typename}&styles&tilePixelRatio=0&url={url}"
-                    layer = QgsRasterLayer(uri, title, "wms")
-                elif protocol == "WFS":
-                    uri = f"pagingEnabled='default' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' srsname='{crs}' typename='{typename}' url='{url}' version='auto'"
-                    layer = QgsVectorLayer(uri, title, "wfs")
-                else:
-                    print(f"Unsupported protocol: {protocol}")
-                    continue
+                # Add the selected layer to the second table
+                row_position = self.dlg.tableWidget_2.rowCount()
+                self.dlg.tableWidget_2.insertRow(row_position)
+                self.dlg.tableWidget_2.setItem(row_position, 0, QTableWidgetItem(title))
+                self.dlg.tableWidget_2.setItem(row_position, 1, QTableWidgetItem(protocol))
+                self.dlg.tableWidget_2.setItem(row_position, 2, QTableWidgetItem(typename))
+                self.dlg.tableWidget_2.setItem(row_position, 3, QTableWidgetItem(url))
 
-                if layer.isValid():
-                    QgsProject.instance().addMapLayer(layer)
-                else:
-                    print(f"Failed to load layer: {title} from {url}")
+                self.dlg.tableWidget.removeRow(row.row())  # Remove the row from the first table
+        self.update_total_count()
+
+    def remove_selected_from_Queue(self):
+        selected_rows = self.dlg.tableWidget_2.selectionModel().selectedRows()
+        for row in selected_rows:
+            title_item = self.dlg.tableWidget_2.item(row.row(), 0)
+            protocol_item = self.dlg.tableWidget_2.item(row.row(), 1)
+            typename_item = self.dlg.tableWidget_2.item(row.row(), 2)
+            url_item = self.dlg.tableWidget_2.item(row.row(), 3)
+
+            if title_item and protocol_item and typename_item and url_item:
+                title = title_item.text()
+                protocol = protocol_item.text()
+                typename = typename_item.text()
+                url = url_item.text()
+
+                # Add the selected layer back to the first table
+                self.dlg.tableWidget.show()  # Show the first table if it was hidden
+                self.dlg.label_3.show()  # Show the label if it was hidden
+                self.dlg.label_5.hide()  # Hide the "No results found" label if it was shown
+                row_position = self.dlg.tableWidget.rowCount()
+                self.dlg.tableWidget.insertRow(row_position)
+                self.dlg.tableWidget.setItem(row_position, 0, QTableWidgetItem(title))
+                self.dlg.tableWidget.setItem(row_position, 1, QTableWidgetItem(protocol))
+                self.dlg.tableWidget.setItem(row_position, 2, QTableWidgetItem(typename))
+                self.dlg.tableWidget.setItem(row_position, 3, QTableWidgetItem(url))
+
+                self.dlg.tableWidget_2.removeRow(row.row())
+        self.update_total_count()
+
+    def load_selected_layers(self):
+        rows = self.dlg.tableWidget_2.rowCount()
+        crs = self.dlg.mQgsProjectionSelectionWidget.crs().authid()
+        if rows == 0:
+            raise ValueError("No layers selected to load.")
+        else:
+            for row in range(rows):
+                title_item = self.dlg.tableWidget_2.item(row, 0)
+                protocol_item = self.dlg.tableWidget_2.item(row, 1)
+                typename_item = self.dlg.tableWidget_2.item(row, 2)
+                url_item = self.dlg.tableWidget_2.item(row, 3)
+
+                if title_item and protocol_item and typename_item and url_item:
+                    title = title_item.text()
+                    protocol = protocol_item.text()
+                    typename = typename_item.text()
+                    url = url_item.text()
+
+                    # Load the layer based on the protocol
+                    if protocol == "WMS":
+                        uri = f"crs={crs}&dpiMode=7&featureCount=10&format=image/png&layers={typename}&styles&tilePixelRatio=0&url={url}"
+                        layer = QgsRasterLayer(uri, title, "wms")
+                    elif protocol == "WFS":
+                        uri = f"pagingEnabled='default' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' srsname='{crs}' typename='{typename}' url='{url}' version='auto'"
+                        layer = QgsVectorLayer(uri, title, "wfs")
+                    else:
+                        print(f"Unsupported protocol: {protocol}")
+                        continue
+
+                    if layer.isValid():
+                        QgsProject.instance().addMapLayer(layer)
+                    else:
+                        print(f"Failed to load layer: {title} from {url}")
+        
     def run(self):
         """Run method that performs all the real work"""
 
@@ -253,15 +348,25 @@ class Geodatabase:
         if self.first_start == True:
             self.first_start = False
             self.dlg = GeodatabaseDialog()
-            self.dlg.pushButton.clicked.connect(self.findServices)
             self.dlg.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
             self.dlg.tableWidget.setSelectionMode(QAbstractItemView.ExtendedSelection)
             self.dlg.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            self.dlg.tableWidget_2.setSelectionBehavior(QAbstractItemView.SelectRows)
+            self.dlg.tableWidget_2.setSelectionMode(QAbstractItemView.ExtendedSelection)
+            self.dlg.tableWidget_2.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
             self.dlg.tableWidget.setColumnCount(4)  # Set the number of columns to 4
+            self.dlg.tableWidget_2.setColumnCount(4)  # Set the number of columns to 4
             self.dlg.tableWidget.setHorizontalHeaderLabels(["Title", "Protocol", "Type Name", "URL"])
+            self.dlg.tableWidget_2.setHorizontalHeaderLabels(["Title", "Protocol", "Type Name", "URL"])
             self.dlg.label_5.hide()
             self.dlg.tableWidget.hide()  # Hide the table view initially
             self.dlg.label_3.hide()  # Hide the label initially
+            self.dlg.pushButton_2.hide()
+            self.dlg.pushButton_2.setEnabled(False)
+            self.dlg.pushButton_3.setEnabled(False)
+            self.dlg.tableWidget.itemSelectionChanged.connect(self.toggle_search_button)
+            self.dlg.tableWidget_2.itemSelectionChanged.connect(self.toggle_remove_button)
+
               
 
         #Fetch the current crs
@@ -273,7 +378,10 @@ class Geodatabase:
         self.dlg.comboBox.clear()
         self.dlg.comboBox.addItems([state for state in state_list.keys()])
 
+        self.dlg.pushButton.clicked.connect(self.findServices)
         self.dlg.progressBar.setValue(0)# Initialize progress bar to 0
+        self.dlg.pushButton_2.clicked.connect(self.add_selected_to_Queue)
+        self.dlg.pushButton_3.clicked.connect(self.remove_selected_from_Queue)
 
         # show the dialog
         self.dlg.show()
