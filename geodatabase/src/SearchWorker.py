@@ -4,6 +4,7 @@ import ssl
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+import concurrent.futures
 
 
 
@@ -85,25 +86,47 @@ class SearchWorker(QThread):
         Services = fetch_csw_services(city_name, keyword)
         extracted_layers = []
         total_steps = len(Services)
-        for step, (title, protocol, url) in enumerate(Services):
-            # print(f"\nĐang quét {protocol} tại {url}...")
+
+        if total_steps == 0:
+            return extracted_layers
+
+        completed_steps = 0
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_service = {
+                executor.submit(self.process_single_service, service): 
+                service for service in Services
+            }
+
+            for future in concurrent.futures.as_completed(future_to_service):
+                service_info = future_to_service[future]
+                try:
+                    result_layers = future.result()
+                    if result_layers:
+                        extracted_layers.extend(result_layers)
+
+                except Exception as e:
+                    print(f"Error processing service {service_info[2]}: {e}")
+                completed_steps += 1
+                percentage = int((completed_steps / total_steps) * 100)
+                self.progress_update.emit(percentage)  # Emit progress update signal
+
+        return extracted_layers
+
+    def process_single_service(self,service_info):
+            title, protocol, url = service_info
             layers = self.extract_ogc_layers(url, protocol)
+            
+            parsed_layers = []
             if layers:
                 for layer in layers:
                     typename = layer.get('typename')
-                    title = layer.get('title')
+                    layer_title = layer.get('title')
                     base_url = layer.get('base_url')
-                    extracted_layers.append({
-                        "title": title,
+                    parsed_layers.append({
+                        "title": layer_title,
                         "protocol": protocol,
                         "url": base_url,
                         "typename": typename
                     })
-            percentage = int((step + 1) / total_steps * 100)
-            self.progress_update.emit(percentage)  # Emit progress update signal        
-                    # print(f"   -  Title: {title}")
-                    # print(f"     Service Type (protocol): {protocol}")
-                    # print(f"     Type name (Typename): {typename}\n")
-                    # print(f"     URL: {base_url}\n")
-                
-        return extracted_layers
+            return parsed_layers

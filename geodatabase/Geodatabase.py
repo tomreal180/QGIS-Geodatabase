@@ -182,6 +182,12 @@ class Geodatabase:
             self.iface.removeToolBarIcon(action)
 
     def findServices(self):
+        if hasattr(self, 'worker') and self.worker is not None:
+            if self.worker.isRunning():
+                print("Worker is already running. Please wait for it to finish.")
+                return
+
+        
         city_name = self.dlg.comboBox.currentText()
         keyword = self.dlg.lineEdit.text().strip()
         self.dlg.pushButton.setEnabled(False)  # Disable the button to prevent multiple clicks
@@ -219,6 +225,9 @@ class Geodatabase:
             self.dlg.pushButton_2.hide()  # Hide the "Load Selected Layers" button when there are no results
 
         self.update_total_count()  # Update the total count labels after search
+        if self.worker is not None:
+            self.worker.deleteLater()
+            self.worker = None
 
     def toggle_search_button(self):
         selected_rows = len(self.dlg.tableWidget.selectionModel().selectedRows())
@@ -339,9 +348,32 @@ class Geodatabase:
                         QgsProject.instance().addMapLayer(layer)
                     else:
                         print(f"Failed to load layer: {title} from {url}")
+
+    def reset_ui(self):
+        """Reset the UI elements to their initial state after loading layers or when needed."""
         
+        # 1. Clear the search input fields
+        self.dlg.lineEdit.clear()
+        self.dlg.comboBox.setCurrentIndex(0) # Reset to the first option (e.g., Select State...)
+
+        # 2. Reset the progress bar
+        self.dlg.progressBar.setValue(0)
+        # self.dlg.progressBar.hide() # Can be hidden until a new search starts
+        
+        # 3. Clear the currently displayed results
+        # If you are using QTableWidget:
+        if hasattr(self.dlg, 'tableWidget'):
+            self.dlg.tableWidget.setRowCount(0)
+        if hasattr(self.dlg, 'tableWidget_2'):
+            self.dlg.tableWidget_2.setRowCount(0)
+
+        # 4. Re-enable the Search/Download buttons (in case they were disabled while running)
+        self.dlg.pushButton.setEnabled(True)
+        self.update_total_count()
+    
     def run(self):
         """Run method that performs all the real work"""
+         # Reset the UI elements before starting a new search
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
@@ -367,6 +399,7 @@ class Geodatabase:
             self.dlg.tableWidget.itemSelectionChanged.connect(self.toggle_search_button)
             self.dlg.tableWidget_2.itemSelectionChanged.connect(self.toggle_remove_button)
 
+        self.reset_ui() 
               
 
         #Fetch the current crs
@@ -375,8 +408,9 @@ class Geodatabase:
         with open(os.path.join(self.plugin_dir,"src", "data", "service_url.json"), encoding="utf-8") as f:
             state_list = json.load(f)
 
+        state_keys = sorted(state_list.keys())  # Sort the state list alphabetically
         self.dlg.comboBox.clear()
-        self.dlg.comboBox.addItems([state for state in state_list.keys()])
+        self.dlg.comboBox.addItems(state_keys)
 
         self.dlg.pushButton.clicked.connect(self.findServices)
         self.dlg.progressBar.setValue(0)# Initialize progress bar to 0

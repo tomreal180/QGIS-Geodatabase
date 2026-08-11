@@ -21,18 +21,20 @@ def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30
     """
     Hàm đọc GetCapabilities và lấy danh sách Title, Name/typename
     """
-    # Xóa các param thừa nếu có để lấy URL gốc
+    # Remove query parameters from the base URL if present
     clean_url = base_url.split('?')[0]
+    if "geoportal.rlp" in base_url :
+        capabilities_url = base_url
+    else:
+    # The GetCapabilities URL
+        capabilities_url = f"{clean_url}?request=GetCapabilities&service={service_type}&version=1.1.0"
     
-    # Tạo URL GetCapabilities
-    capabilities_url = f"{clean_url}?request=GetCapabilities&service={service_type}&version=1.1.0"
-    
-    # Thẻ chứa thông tin layer khác nhau giữa WMS và WFS
+    # tag containing layer information differs between WMS and WFS
     target_tag = 'FeatureType' if service_type.upper() == 'WFS' else 'Layer'
     
     results = []
     try:
-        # Giả lập User-Agent để tránh bị server từ chối
+        # Simulate User-Agent to avoid being rejected by the server
         req = urllib.request.Request(capabilities_url, headers={'User-Agent': 'Mozilla/5.0'})
         response = urllib.request.urlopen(
             req,
@@ -42,9 +44,9 @@ def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30
 
         xml_data = response.read()
         
-        # Đọc cấu trúc XML
+        # Parse the XML structure
         root = ET.fromstring(xml_data)
-        # Duyệt qua tất cả các thẻ, bỏ qua Namespace (thường có dạng {http://...}Name)
+        # Iterate through all tags, ignoring the Namespace (usually in the form {http://...}Name)
         for elem in root.iter():
             
             tag = elem.tag.split('}')[-1] 
@@ -53,13 +55,14 @@ def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30
                 layer_data = {}
                 for child in elem:
                     child_tag = child.tag.split('}')[-1]
-                    if child_tag == 'Name':
+                    print(f"Child tag: {child_tag}, text: {child.text}")
+                    if 'Name' in child_tag:
                         layer_data['typename'] = child.text
-                    elif child_tag == 'Title':
+                    elif 'Title' in child_tag:
                         layer_data['title'] = child.text
                 layer_data['base_url'] = clean_url
                 
-                # Chỉ lưu nếu có typename (tránh lấy nhầm các thẻ Layer tổng)
+                # Only save if there is a typename (to avoid capturing general Layer tags)
                 if layer_data.get('typename'):
                     results.append(layer_data)
                     
@@ -78,12 +81,12 @@ def extract_ogc_layers(base_url, service_type="WFS", verify_ssl=True, timeout=30
         print(f"Error accessing {base_url}: {e}")
         return []
 
-# # --- CHẠY THỬ VỚI WFS BERLIN ---
-# test_url = "https://gdi.berlin.de/services/wfs/amarex_potenziale"
-# print("Đang quét WFS...")
+# # --- Test ---
+# test_url = "https://www.geoportal.rlp.de/mapbender/php/wfs.php?INSPIRE=1&FEATURETYPE_ID=5064&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=2.0.0"
+# print("Đang quét WMS...")
 # layers = extract_ogc_layers(test_url, "WFS")
 
 # for layer in layers:
-#     print(f"- Hiển thị (Title): {layer.get('title')}")
-#     print(f"  Tên kỹ thuật (Typename): {layer.get('typename')}\n")
-#     print(f"  URL gốc: {layer.get('base_url')}\n")
+#     print(f"- Title: {layer.get('title')}")
+#     print(f"  Technical name (Typename): {layer.get('typename')}\n")
+#     print(f"  Original URL: {layer.get('base_url')}\n")
