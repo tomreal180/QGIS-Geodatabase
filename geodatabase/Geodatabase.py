@@ -22,10 +22,11 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
-from qgis.core import QgsSettings
+from qgis.core import QgsSettings, QgsLayerTreeLayer
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QAbstractItemView, QHeaderView, QTableWidgetItem
+from qgis.PyQt.QtWidgets import QAction, QAbstractItemView, QHeaderView, QTableWidgetItem, QComboBox, QLineEdit
 from qgis.core import QgsProject, QgsRasterLayer, QgsVectorLayer
+# from qgis.gui import QgsFilterLineEdit
 
 
 # Import the code for the dialog
@@ -64,6 +65,12 @@ class Geodatabase:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&Geodatabase')
+
+        with open(os.path.join(self.plugin_dir,"src", "data", "service_url.json"), encoding="utf-8") as f:
+            state_list = json.load(f)
+        
+        self.states = sorted(state_list.keys())  # Sort the state list alphabetically
+        self.pluginIsActive = False
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -168,13 +175,54 @@ class Geodatabase:
             text=self.tr(u'Load Geodata'),
             callback=self.run,
             parent=self.iface.mainWindow())
-
         # will be set False in run()
         self.first_start = True
 
+    def create_quick_search_ui(self):
+        self.state_combo_box = QComboBox()
+        self.state_combo_box.addItems(self.states)
+        self.state_combo_box.setMinimumWidth(50)
 
+        self.quick_search_box = QLineEdit()
+        self.quick_search_box.setPlaceholderText("Suchen notwendige Daten")
+        self.quick_search_box.setMinimumWidth(50)
+
+        self.my_toolbar = self.iface.addToolBar('Geodatabase')
+        self.my_toolbar.setObjectName('GeodatabaseSearchToolbar')
+
+        self.combo_action = self.my_toolbar.addWidget(self.state_combo_box)
+        self.quick_search_action = self.my_toolbar.addWidget(self.quick_search_box)
+
+        self.quick_search_box.returnPressed.connect(self.run_quick_search)
+    
+    def run_quick_search(self):
+        keyword = self.quick_search_box.text().strip()
+        selected_state = self.state_combo_box.currentText()
+        if not keyword:
+            return
+
+        if not self.pluginIsActive:
+            self.pluginIsActive = True
+            if hasattr(self, 'reset_ui'):
+                self.reset_ui()
+            self.dlg.show()
+
+        self.dlg.comboBox.setCurrentText(selected_state)
+        self.dlg.lineEdit.setText(keyword)
+
+        if hasattr(self, 'findServices'):
+            self.findServices()
+
+        self.quick_search_box.clear()
+    
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+        if hasattr(self, 'my_toolbar'):
+            self.iface.mainWindow().removeToolBar(self.my_toolbar)
+            del self.combo_action        
+            del self.quick_search_action
+            del self.my_toolbar
+
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&Geodatabase'),
@@ -318,6 +366,8 @@ class Geodatabase:
     def load_selected_layers(self):
         rows = self.dlg.tableWidget_2.rowCount()
         crs = self.dlg.mQgsProjectionSelectionWidget.crs().authid()
+        layer_position = self.dlg.comboBox_2.currentText()
+        index = self.layer.get(layer_position, 0)  # Default to 0 if not found
         if rows == 0:
             raise ValueError("No layers selected to load.")
         else:
@@ -345,9 +395,28 @@ class Geodatabase:
                         continue
 
                     if layer.isValid():
-                        QgsProject.instance().addMapLayer(layer)
+                        self.load_layer_with_position(layer, index)
+                        self.layer = self.get_new_layer_position()  # Update the layer positions after loading
+                        index = index + 1  # Increment index for the next layer
                     else:
                         print(f"Failed to load layer: {title} from {url}")
+
+    def get_new_layer_position(self):
+        ordered_layers = QgsProject.instance().layerTreeRoot().layerOrder()
+        layer = {}
+        layer["Ganz oben"] = 0
+        for index, lyr in enumerate(ordered_layers):
+            layer['Unter ' + lyr.name() + ' '] = index+1
+        return layer
+        
+    def load_layer_with_position(self,layer, position):
+        QgsProject.instance().addMapLayer(layer, False)  # Add the layer without adding it to the legend
+        root = QgsProject.instance().layerTreeRoot()
+
+        if position < 0 or position > len(root.children()):
+            raise ValueError("Position is out of bounds.")
+        else:
+            root.insertLayer(position, layer)  # Insert the layer at the specified position
 
     def reset_ui(self):
         """Reset the UI elements to their initial state after loading layers or when needed."""
@@ -386,6 +455,43 @@ class Geodatabase:
             self.dlg.tableWidget_2.setSelectionBehavior(QAbstractItemView.SelectRows)
             self.dlg.tableWidget_2.setSelectionMode(QAbstractItemView.ExtendedSelection)
             self.dlg.tableWidget_2.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+            self.dlg.tableWidget_2.setDragEnabled(True)           
+            self.dlg.tableWidget_2.setAcceptDrops(True)           
+            self.dlg.tableWidget_2.viewport().setAcceptDrops(True)
+            self.dlg.tableWidget_2.setDragDropOverwriteMode(False)
+            self.dlg.tableWidget_2.setDropIndicatorShown(True)
+            self.dlg.tableWidget_2.setDragDropMode(QAbstractItemView.InternalMove)
+            def custom_dropEvent(event):
+                source_row = self.dlg.tableWidget_2.currentRow()
+                target_row = self.dlg.tableWidget_2.rowAt(event.pos().y())
+
+                if target_row == -1:
+                    target_row = self.dlg.tableWidget_2.rowCount()
+
+                if source_row == target_row or source_row == -1:
+                    event.ignore()
+                    return
+
+                row_data = []
+                for col in range(self.dlg.tableWidget_2.columnCount()):
+                    item = self.dlg.tableWidget_2.takeItem(source_row, col)
+                    row_data.append(item.text() if item else "")
+
+                self.dlg.tableWidget_2.insertRow(target_row)
+
+                for col, data in enumerate(row_data):
+                    self.dlg.tableWidget_2.setItem(target_row, col, QTableWidgetItem(data))
+
+                if target_row < source_row:
+                    self.dlg.tableWidget_2.removeRow(source_row+1)
+                else:
+                    self.dlg.tableWidget_2.removeRow(source_row)
+
+                event.accept()
+            self.dlg.tableWidget_2.dropEvent = custom_dropEvent
+
+            
             self.dlg.tableWidget.setColumnCount(4)  # Set the number of columns to 4
             self.dlg.tableWidget_2.setColumnCount(4)  # Set the number of columns to 4
             self.dlg.tableWidget.setHorizontalHeaderLabels(["Title", "Protocol", "Type Name", "URL"])
@@ -398,19 +504,22 @@ class Geodatabase:
             self.dlg.pushButton_3.setEnabled(False)
             self.dlg.tableWidget.itemSelectionChanged.connect(self.toggle_search_button)
             self.dlg.tableWidget_2.itemSelectionChanged.connect(self.toggle_remove_button)
+            self.create_quick_search_ui()  # Create the quick search UI elements
 
-        self.reset_ui() 
-              
+        # #reset the UI elements before starting a new search
+        # self.reset_ui() 
 
         #Fetch the current crs
         self.current_crs = QgsProject.instance().crs()
         self.dlg.mQgsProjectionSelectionWidget.setCrs(self.current_crs)
-        with open(os.path.join(self.plugin_dir,"src", "data", "service_url.json"), encoding="utf-8") as f:
-            state_list = json.load(f)
-
-        state_keys = sorted(state_list.keys())  # Sort the state list alphabetically
+        
         self.dlg.comboBox.clear()
-        self.dlg.comboBox.addItems(state_keys)
+        self.dlg.comboBox.addItems(self.states)
+
+        self.dlg.comboBox_2.clear()
+        self.layer = self.get_new_layer_position()
+        self.dlg.comboBox_2.addItems(self.layer.keys())
+        
 
         self.dlg.pushButton.clicked.connect(self.findServices)
         self.dlg.progressBar.setValue(0)# Initialize progress bar to 0

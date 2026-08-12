@@ -5,11 +5,13 @@ from pathlib import Path
 import urllib3
 
 from owslib.csw import CatalogueServiceWeb
-from owslib.fes import  And, PropertyIsLike, Not
+from owslib.fes import  And, PropertyIsLike, Not, Or
 from owslib.util import Authentication
+import concurrent.futures
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-# from  import extract_ogc_layers
+
+
 dir = os.path.dirname(__file__)
 def fetch_csw_services(city_name=None, keyword=None):
     service_urls = json.loads(Path(os.path.join(dir,"data", "service_url.json")).read_text(encoding="utf-8"))
@@ -17,14 +19,22 @@ def fetch_csw_services(city_name=None, keyword=None):
     csw = CatalogueServiceWeb(csw_url, auth=Authentication(verify=False), timeout=10)
     print(f"Connected to CSW GDI-DE version {csw.version}")
     city_filter = None
+
     if city_name == 'Hamburg':
         city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%hamburg%", wildCard="%")
     elif city_name == 'Sachsen-Anhalt':
-        city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%sachsen-anhalt%", wildCard="%")
+        city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%anhalt%", wildCard="%")
     elif city_name == 'Brandenburg':
         city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%brandenburg%", wildCard="%")
     elif city_name == 'Bremen':
-        city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%bremen%", wildCard="%")
+        bremen_base = PropertyIsLike(propertyname='csw:AnyText', literal="%bremen%", wildCard="%")
+        not_nieder = Not([PropertyIsLike(
+                        propertyname='csw:AnyText', 
+                        literal="%niedersachsen%", 
+                        wildCard="%"
+                     )])
+        city_filter = And([bremen_base, not_nieder])
+        
     elif city_name == 'Mecklenburg-Vorpommern':
         city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%mecklenburg-vorpommern%", wildCard="%")
     elif city_name == 'Hessen':
@@ -61,7 +71,12 @@ def fetch_csw_services(city_name=None, keyword=None):
         city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%nordrhein%", wildCard="%")
     elif city_name == 'Baden-Württemberg':
         city_filter = PropertyIsLike(propertyname='dc:title', literal="%BW%", wildCard="%")
-
+    elif city_name == 'Schleswig-Holstein':
+        city_filter = PropertyIsLike(propertyname='csw:AnyText', literal="%schleswig%", wildCard="%")
+    # elif city_name == 'Deutschland':
+    #     deutsch_filter = PropertyIsLike(propertyname='dc:title', literal="%deutschland%", wildCard="%")
+    #     englisch_filter = PropertyIsLike(propertyname='dc:title', literal="%germany%", wildCard="%")
+    #     city_filter = Or([deutsch_filter, englisch_filter])
 
 
     title_filter = None
@@ -94,28 +109,36 @@ def fetch_csw_services(city_name=None, keyword=None):
                 maxrecords=200
             )
 
-    
     results = set()
     urls_checked = set()
-    for rec_id, record in csw.records.items():
-        # print(record.uris)
-        urls = extract_geo_service_urls(record)
-        if urls:
-            # print(record.title)
-            for protocol, url in urls:
-                if url in urls_checked:
-                    continue
-                else:
-                    print(f"   [Link/Protocol: {protocol}] {url}")
-                    results.add((
-                                    record.title,
-                                    protocol,
-                                    url
-                                ))
-                    urls_checked.add(url)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_result = {
+            executor.submit(process_single_record, record): 
+            record for record in csw.records.values()
+        }
+
+        for future in concurrent.futures.as_completed(future_to_result):
+            try:
+                record, urls = future.result()
+                if urls:
+                    for protocol, url in urls:
+                        if url in urls_checked:
+                            continue
+                        else:
+                            results.add((
+                                record.title,
+                                protocol,
+                                url
+                            ))
+                            urls_checked.add(url)
+                            
+            except Exception as e:
+                print(f"Error when processing record {record.title}: {e}")
+
     return results
         
-
+def process_single_record(record):
+   return record, extract_geo_service_urls(record)
 
 
 def extract_geo_service_urls(record):
@@ -131,12 +154,12 @@ def extract_geo_service_urls(record):
         url = str(uri.get("url", ""))
         lowered_url = url.lower()
 
-        if "WMS" in protocol or "WFS" in protocol or "wms" in lowered_url or "wfs" in lowered_url:
-            if not protocol or ("WMS" not in protocol and "WFS" not in protocol):
-                protocol = "WMS" if "wms" in lowered_url else "WFS" if "wfs" in lowered_url else ""
+        if "WMS" in protocol or "WFS" in protocol or "WCS" in protocol or "WMTS" in protocol or "wms" in lowered_url or "wfs" in lowered_url or "wcs" in lowered_url or "wmts" in lowered_url:
+            if not protocol or ("WMS" not in protocol and "WFS" not in protocol and "WCS" not in protocol and "WMTS" not in protocol):
+                protocol = "WMS" if "wms" in lowered_url else "WFS" if "wfs" in lowered_url else "WCS" if "wcs" in lowered_url else "WMTS" if "wmts" in lowered_url else ""
 
             else:
-                protocol = "WMS" if "WMS" in protocol else "WFS" if "WFS" in protocol else ""
+                protocol = "WMS" if "WMS" in protocol else "WFS" if "WFS" in protocol else "WCS" if "WCS" in protocol else "WMTS" if "WMTS" in protocol else ""
             service_urls.append((protocol, url))
 
 
@@ -144,4 +167,4 @@ def extract_geo_service_urls(record):
 
 
 # if __name__ == "__main__":
-#     fetch_csw_services(city_name="Bremen", keyword="ALKIS")
+#     fetch_csw_services(city_name="Hamburg")

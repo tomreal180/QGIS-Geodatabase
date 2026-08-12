@@ -1,18 +1,18 @@
 {
+    "Baden-Württemberg": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
+    "Bayern": "http://geoportal.bayern.de/csw/",
     "Berlin": "https://gdi.berlin.de/geonetwork/srv/ger/csw",
-    "Hamburg": "https://metaver.de/csw",
-    "Sachsen-Anhalt": "https://metaver.de/csw",
     "Brandenburg": "https://metaver.de/csw",
     "Bremen": "https://metaver.de/csw",
-    "Mecklenburg-Vorpommern": "https://metaver.de/csw",
+    "Hamburg": "https://metaver.de/csw",
     "Hessen": "https://metaver.de/csw",
-    "Saarland": "https://metaver.de/csw",
+    "Mecklenburg-Vorpommern": "https://metaver.de/csw",
     "Niedersachsen": "https://ni-harvest-prod.geocat.live/catalogue/srv/ger/csw?",
-    "Sachsen": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
-    "Thüringen": "https://geomis.geoportal-th.de/geonetwork/srv/eng/csw",
-    "Rheinland-Pfalz": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
     "Nordrhein-Westfalen": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
-    "Schleswig-Holstein": "https://umweltportal.schleswig-holstein.de/csw",
-    "Baden-Württemberg": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
-    "Bayern": "http://geoportal.bayern.de/csw/"
+    "Rheinland-Pfalz": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
+    "Saarland": "https://metaver.de/csw",
+    "Sachsen": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
+    "Sachsen-Anhalt": "https://metaver.de/csw",
+    "Schleswig-Holstein": "https://gdk.gdi-de.org/gdi-de/srv/ger/csw",
+    "Thüringen": "https://geomis.geoportal-th.de/geonetwork/srv/eng/csw"
 }
