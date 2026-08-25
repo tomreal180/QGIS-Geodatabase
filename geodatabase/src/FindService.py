@@ -14,6 +14,16 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 dir = os.path.dirname(__file__)
 def fetch_csw_services(city_name=None, keyword=None):
+    """
+    Fetches services from a CSW endpoint based on the provided city name and keyword.
+    Args:
+        city_name (str): The name of the city to filter services by.
+        keyword (str): A keyword to filter services by title.
+    Returns:
+        set: A set of tuples containing the service title, protocol, and URL.
+    """
+
+    # Load the service URLs from the JSON file
     service_urls = json.loads(Path(os.path.join(dir,"data", "service_url.json")).read_text(encoding="utf-8"))
     csw_url = service_urls.get(city_name)
     csw = CatalogueServiceWeb(csw_url, auth=Authentication(verify=False), timeout=10)
@@ -78,7 +88,8 @@ def fetch_csw_services(city_name=None, keyword=None):
     #     englisch_filter = PropertyIsLike(propertyname='dc:title', literal="%germany%", wildCard="%")
     #     city_filter = Or([deutsch_filter, englisch_filter])
 
-
+    
+    # If a keyword is provided, create a title filter and combine it with the city filter if it exists
     title_filter = None
     filter = None
     if keyword:
@@ -109,6 +120,7 @@ def fetch_csw_services(city_name=None, keyword=None):
                 maxrecords=200
             )
 
+    # Process the records concurrently to extract service URLs
     results = set()
     urls_checked = set()
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -122,6 +134,7 @@ def fetch_csw_services(city_name=None, keyword=None):
                 record, urls = future.result()
                 if urls:
                     for protocol, url in urls:
+                        # print(f"Found service: {record.title} - {protocol}")
                         if url in urls_checked:
                             continue
                         else:
@@ -138,10 +151,24 @@ def fetch_csw_services(city_name=None, keyword=None):
     return results
         
 def process_single_record(record):
+   """
+    Process a single CSW record to extract service URLs.
+    Args:
+        record: A CSW record object.
+    Returns:
+        tuple: A tuple containing the record and a list of service URLs.
+    """
    return record, extract_geo_service_urls(record)
 
 
 def extract_geo_service_urls(record):
+    """
+    Extracts geospatial service URLs from a CSW record.
+    Args:
+        record: A CSW record object.
+    Returns:
+        list: A list of tuples containing the protocol and URL of geospatial services.
+    """
     service_urls = []
 
     if not getattr(record, "uris", None):
@@ -166,5 +193,6 @@ def extract_geo_service_urls(record):
     return service_urls
 
 
-# if __name__ == "__main__":
-#     fetch_csw_services(city_name="Hamburg")
+if __name__ == "__main__":
+    fetch_csw_services(city_name="Berlin", keyword="ALKIS")
+

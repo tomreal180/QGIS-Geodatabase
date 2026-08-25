@@ -21,7 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, Qt
 from qgis.core import QgsSettings, QgsLayerTreeLayer
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QAbstractItemView, QHeaderView, QTableWidgetItem, QComboBox, QLineEdit
@@ -431,14 +431,20 @@ class Geodatabase:
         
         # 3. Clear the currently displayed results
         # If you are using QTableWidget:
-        if hasattr(self.dlg, 'tableWidget'):
-            self.dlg.tableWidget.setRowCount(0)
-        if hasattr(self.dlg, 'tableWidget_2'):
-            self.dlg.tableWidget_2.setRowCount(0)
+        # if hasattr(self.dlg, 'tableWidget'):
+        #     self.dlg.tableWidget.setRowCount(0)
+        # if hasattr(self.dlg, 'tableWidget_2'):
+        #     self.dlg.tableWidget_2.setRowCount(0)
 
         # 4. Re-enable the Search/Download buttons (in case they were disabled while running)
         self.dlg.pushButton.setEnabled(True)
         self.update_total_count()
+
+    def custom_keyPressEvent(self, event):
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            return
+        else:
+            self.original_keyPressEvent(event)
     
     def run(self):
         """Run method that performs all the real work"""
@@ -506,8 +512,13 @@ class Geodatabase:
             self.dlg.tableWidget_2.itemSelectionChanged.connect(self.toggle_remove_button)
             self.create_quick_search_ui()  # Create the quick search UI elements
 
+            self.dlg.lineEdit.returnPressed.connect(self.findServices)  # Connect the returnPressed signal to findServices
+            self.original_keyPressEvent = self.dlg.keyPressEvent  # Store the original keyPressEvent method
+
         # #reset the UI elements before starting a new search
-        # self.reset_ui() 
+        self.reset_ui()
+
+        self.dlg.keyPressEvent = self.custom_keyPressEvent 
 
         #Fetch the current crs
         self.current_crs = QgsProject.instance().crs()
@@ -519,8 +530,8 @@ class Geodatabase:
         self.dlg.comboBox_2.clear()
         self.layer = self.get_new_layer_position()
         self.dlg.comboBox_2.addItems(self.layer.keys())
-        
 
+        
         self.dlg.pushButton.clicked.connect(self.findServices)
         self.dlg.progressBar.setValue(0)# Initialize progress bar to 0
         self.dlg.pushButton_2.clicked.connect(self.add_selected_to_Queue)
