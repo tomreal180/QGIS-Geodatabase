@@ -1,55 +1,3 @@
-# from qgis.utils import qgsfunction
-
-# from qgis.core import *
-# from qgis.gui import *
-
-
-# @qgsfunction(args='auto', group='Custom')
-# def getDynamicItemPositionX(LayoutName, ItemName, feature, parent):
-#     """
-#     Returns the X position of a layout item in millimeters.
-#     Usage: getDynamicItemPositionX('LayoutName', 'ItemName')
-#     """
-#     layout_name = LayoutName
-#     item_name = ItemName
-
-#     manager = QgsProject.instance().layoutManager()
-#     layout = manager.layoutByName(layout_name)
-
-#     get_item = layout.itemById(item_name)
-#     get_item_position = get_item.positionWithUnits()
-#     get_item_position_x = get_item_position.x()
-
-#     return get_item_position_x
-
-# @qgsfunction(args='auto', group='Custom')
-# def getDynamicItemPositionY(LayoutName, ItemName, feature, parent):
-#     """
-#     Returns the Y position of a layout item in millimeters.
-#     Usage: getDynamicItemPositionY('LayoutName', 'ItemName')
-#     """
-#     layout_name = LayoutName
-#     item_name = ItemName
-
-#     manager = QgsProject.instance().layoutManager()
-#     layout = manager.layoutByName(layout_name)
-
-#     get_item = layout.itemById(item_name)
-#     get_item_position = get_item.positionWithUnits()
-#     get_item_position_y = get_item_position.y()
-
-#     return get_item_position_y
-
-
-# functions_to_load = [getDynamicItemPositionX, getDynamicItemPositionY]
-
-# def register_functions():
-#     for func in functions_to_load:
-#         QgsExpression.registerFunction(func)
-
-# # def unregister_functions():
-
-
 from qgis.utils import qgsfunction
 from qgis.core import QgsProject, QgsExpression, QgsLayoutItemLabel
 from PyQt5.QtGui import QFontMetricsF
@@ -167,21 +115,79 @@ def CalcLabelHeight(layout_name, item_name, feature, parent):
     height_mm = total_height_px * 25.4 / 96
     return height_mm
 
+def CalcLabelWidth(layout_name, item_id, feature, parent):
+    layout = QgsProject.instance().layoutManager().layoutByName(layout_name)
+    if not layout:
+        return 0
 
-# --- ĐĂNG KÝ HÀM VÀO QGIS ---
-# Danh sách các hàm cần đưa vào QGIS Expression Engine
+    item = layout.itemById(item_id)
+    if not item or not isinstance(item, QgsLayoutItemLabel):
+        return 0
+
+    text = item.text()
+    font = item.font()
+    if not text.strip():
+        return 0
+
+    font_metrics = QFontMetricsF(font)
+    # get max line width in pixels
+    widths_px = [font_metrics.horizontalAdvance(line) for line in text.split("\n")]
+    max_width_px = max(widths_px) if widths_px else 0
+
+    # add 5% padding
+    max_width_px *= 1.04
+
+    # convert px back to mm (96 dpi assumption)
+    width_mm = max_width_px * 25.4 / 96
+
+    return width_mm
+
+
+@qgsfunction(args='auto', group='Custom')
+def GetPageSizeWidth(LayoutName):
+    layout_name = LayoutName
+
+    # Layout abfragen
+    manager = QgsProject.instance().layoutManager()
+    layout = manager.layoutByName(layout_name)
+
+    # Printseite --> Größe der Printseite --> Breite
+    page = layout.pageCollection().page(0)
+    size = page.pageSize()
+    width_mm = size.width()
+
+    return width_mm
+
+
+@qgsfunction(args='auto', group='Custom')
+def GetPageSizeHeight(LayoutName):
+    layout_name = LayoutName
+
+    # Layout abfragen
+    manager = QgsProject.instance().layoutManager()
+    layout = manager.layoutByName(layout_name)
+
+    # Printseite --> Größe der Printseite --> Höhe
+    page = layout.pageCollection().page(0)
+    size = page.pageSize()
+    height_mm = size.height()
+
+    return height_mm
+# --- Register functions in QGIS ---
+# List of functions needed in QGIS Expression Engine
 FUNCTIONS_TO_LOAD = (
     GetDynamicItemPositionX, 
     GetDynamicItemPositionY, 
     GetDynamicItemHeight, 
     GetDynamicItemWidth, 
-    CalcLabelHeight
+    CalcLabelHeight,
+    GetPageSizeWidth,
+    GetPageSizeHeight
 )
 
 def register_functions(is_register=True):
     """
-    Hàm này sẽ được gọi ở hàm __init__ của plugin 
-    để nạp tất cả các hàm toán học vào QGIS.
+    Register or unregister the custom functions in QGIS Expression Engine.
     """
     for f in FUNCTIONS_TO_LOAD:
         if is_register:

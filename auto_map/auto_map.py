@@ -184,13 +184,26 @@ class AutoMap:
         user_inputs = {
             'target_layer': self.iface.mapCanvas(),
             'title': self.dlg.lineEdit.text(),
-            'selected_layers': [x.strip() for x in self.dlg.lineEdit_2.text().split(", ")] if self.dlg.lineEdit_2.text() else []    
+            'selected_layers': [x.strip() for x in self.dlg.lineEdit_2.text().split(", ")] if self.dlg.lineEdit_2.text() else [],
+            'auftraggeber': self.dlg.plainTextEdit.toPlainText(),
+            'planinhalt': self.dlg.plainTextEdit_2.toPlainText(),
+            'datengrundlage': self.dlg.lineEdit_3.text(),
+            'hintergrundlage': self.dlg.lineEdit_4.text(),
+            'sonstige': self.dlg.plainTextEdit_3.toPlainText(),
         }
         project = QgsProject.instance()
         layout_generator = LayoutGenerator(project, user_inputs)
-        new_layout = layout_generator.create_standard_layout()
+        type_of_layout = self.dlg.comboBox.currentText()
+        if type_of_layout == 'Ganzseitig DINA4':
+            new_layout = layout_generator.create_standard_layout()
+        elif type_of_layout == 'Berichte':
+            new_layout = layout_generator.create_bericht_legende_unten_layout()
+        else:
+            new_layout = layout_generator.create_standard_layout()
+        
         if new_layout:
             self.iface.openLayoutDesigner(new_layout)
+            
 
     def open_multi_select_dialog(self):
         layers = self.iface.mapCanvas().layers()
@@ -220,7 +233,9 @@ class AutoMap:
             self.dlg.lineEdit_2.setReadOnly(True)
             self.dlg.toolButton.clicked.connect(self.open_multi_select_dialog)
 
-       
+        self.dlg.comboBox.clear()
+        layout = ['Ganzseitig DINA4', 'Berichte']
+        self.dlg.comboBox.addItems(layout)
 
         # show the dialog
         self.dlg.show()
