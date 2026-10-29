@@ -6,129 +6,450 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>403</height>
+    <width>450</width>
+    <height>1023</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Layout Render</string>
   </property>
-  <widget class="QDialogButtonBox" name="button_box">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>370</y>
-     <width>361</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>0</y>
-     <width>361</width>
-     <height>361</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="1" colspan="2">
-     <widget class="QLineEdit" name="lineEdit_2"/>
-    </item>
-    <item row="1" column="1" colspan="3">
-     <widget class="QLineEdit" name="lineEdit"/>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Project:</string>
-      </property>
+  <layout class="QFormLayout" name="formLayout_3">
+   <item row="1" column="0">
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="tabBarAutoHide">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="tab_1">
+      <attribute name="title">
+       <string>Layout</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="10" column="1" colspan="3">
+          <widget class="QDateEdit" name="dateEdit"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>Project Informationen:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="18" column="0">
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Beschriftungen:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Adresse:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>Abschnitt:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="3">
+          <widget class="QToolButton" name="toolButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="29" column="3">
+          <widget class="QToolButton" name="toolButton_2">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_8"/>
+         </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEdit_2"/>
+         </item>
+         <item row="29" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEdit_3"/>
+         </item>
+         <item row="27" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_4"/>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Ausgewählte Layers:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>Erstellte Datum:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_12"/>
+         </item>
+         <item row="19" column="1" colspan="2">
+          <widget class="QLineEdit" name="lineEdit_11">
+           <property name="placeholderText">
+            <string>Optional</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_26">
+           <property name="text">
+            <string>Layout Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_6"/>
+         </item>
+         <item row="24" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Hinweise:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Project Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_7"/>
+         </item>
+         <item row="30" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Sonstige Karteninhalte: </string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Stand:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="19" column="0">
+          <widget class="QLabel" name="label_22">
+           <property name="text">
+            <string>Vegetation Layers:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>Prüfer</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="1" colspan="3">
+          <widget class="QPlainTextEdit" name="plainTextEdit"/>
+         </item>
+         <item row="12" column="0">
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>Auftraggeber:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="23" column="0">
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>Metadaten:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_10">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>MM/YYYY</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="1" colspan="3">
+          <widget class="QgsFileWidget" name="mQgsFileWidget"/>
+         </item>
+         <item row="24" column="1" colspan="3">
+          <widget class="QPlainTextEdit" name="plainTextEdit_2"/>
+         </item>
+         <item row="3" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit"/>
+         </item>
+         <item row="17" column="0">
+          <widget class="QLabel" name="label_21">
+           <property name="text">
+            <string>Beschreibungen:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Vertragsnummer:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="29" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Hintergrundkarte Layers:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="19" column="3">
+          <widget class="QToolButton" name="toolButton_3">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_9"/>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_16">
+           <property name="text">
+            <string>Planverfasser:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="1" colspan="3">
+          <widget class="QLineEdit" name="lineEdit_5"/>
+         </item>
+         <item row="27" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Hintergrundkarte Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="18" column="1" colspan="3">
+          <widget class="QPlainTextEdit" name="plainTextEdit_4">
+           <property name="placeholderText">
+            <string>Optional</string>
+           </property>
+          </widget>
+         </item>
+         <item row="30" column="1" colspan="3">
+          <widget class="QPlainTextEdit" name="plainTextEdit_3">
+           <property name="placeholderText">
+            <string>Optional</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" colspan="3">
+          <widget class="QComboBox" name="comboBox"/>
+         </item>
+         <item row="14" column="0">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Logo:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Layout:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Name:</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Planinhalt:</string>
-      </property>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Blattschnitt</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_23">
+           <property name="text">
+            <string>Layout:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBox_2"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_24">
+           <property name="text">
+            <string>Map ID:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_25">
+           <property name="text">
+            <string>Layer:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="comboBox_3"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_27">
+           <property name="text">
+            <string>Maßstab:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lineEdit_14">
+           <property name="placeholderText">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="checkBox_2">
+           <property name="text">
+            <string>Nord-Orientierung</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox_6"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Datengrundlage:</string>
-      </property>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Atlas</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QFormLayout" name="formLayout_2">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_28">
+           <property name="text">
+            <string>Abdeckung:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBox_4"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_29">
+           <property name="text">
+            <string>Layout:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox_5"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_31">
+           <property name="text">
+            <string>Map ID:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_30">
+           <property name="text">
+            <string>Maßstab:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lineEdit_15">
+           <property name="placeholderText">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_32">
+           <property name="text">
+            <string>Index Spalte Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="lineEdit_17">
+           <property name="placeholderText">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Auto Renumbering</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="comboBox_7"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
-    </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>Sonstige Karteninhalte: </string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1" colspan="3">
-     <widget class="QPlainTextEdit" name="plainTextEdit_2"/>
-    </item>
-    <item row="5" column="1" colspan="3">
-     <widget class="QLineEdit" name="lineEdit_3"/>
-    </item>
-    <item row="7" column="1" colspan="3">
-     <widget class="QPlainTextEdit" name="plainTextEdit_3"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Legend:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Auftraggeber:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Hintergrundkarte:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1" colspan="3">
-     <widget class="QLineEdit" name="lineEdit_4"/>
-    </item>
-    <item row="2" column="3">
-     <widget class="QToolButton" name="toolButton">
-      <property name="text">
-       <string>...</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1" colspan="3">
-     <widget class="QPlainTextEdit" name="plainTextEdit"/>
-    </item>
-    <item row="0" column="1" colspan="3">
-     <widget class="QComboBox" name="comboBox"/>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Layout:</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfilewidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

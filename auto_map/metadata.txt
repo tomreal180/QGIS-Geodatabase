@@ -3,12 +3,12 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Layout Render
+name=AutoMap
 qgisMinimumVersion=3.0
-description=This plugin generates automatically Map based on defined Layouts
-version=0.1
+description=AutoMap is a QGIS plugin that programmatically builds highly customized print layouts and automatically generates strip maps (Blattschnitt), seamlessly integrating them with the QGIS Atlas engine for mass map production
+version= 1.0.0
 author=Minh Duc Ha
-email=ducha180102@gmail.com
+email=Minh-Duc.Ha@spie.de
 
 about=Provide a brief description of the plugin and its purpose.
 

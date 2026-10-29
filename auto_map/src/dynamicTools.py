@@ -115,6 +115,7 @@ def CalcLabelHeight(layout_name, item_name, feature, parent):
     height_mm = total_height_px * 25.4 / 96
     return height_mm
 
+@qgsfunction(args="auto", group="Custom")
 def CalcLabelWidth(layout_name, item_id, feature, parent):
     layout = QgsProject.instance().layoutManager().layoutByName(layout_name)
     if not layout:

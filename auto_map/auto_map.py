@@ -21,12 +21,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication
-from qgis.core import QgsSettings, QgsProject
+from qgis.PyQt.QtCore import QLocale, QTranslator, QCoreApplication, QDate, Qt
+from qgis.core import QgsSettings, QgsProject, QgsVectorLayer, QgsWkbTypes, QgsLayoutItemMap
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QDialog
+from qgis.PyQt.QtWidgets import QAction, QDialog, QInputDialog, QProgressDialog
 from .src.LayoutGenerator import LayoutGenerator
 from .src.MultiSelectDialog import MultiSelectDialog
+from .src.BlattschnittClass import BlattschnittTool
 
 # Import the code for the dialog
 from .auto_map_dialog import AutoMapDialog
@@ -67,6 +68,10 @@ class AutoMap:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
+        
+        self.last_blattschnitt_layer = None
+        self.last_layout_name = None
+        self.i = 0
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -181,31 +186,81 @@ class AutoMap:
             self.iface.removeToolBarIcon(action)
 
     def load_layout(self):
+        self.dlg.mQgsFileWidget.setStorageMode(0)
+        self.dlg.mQgsFileWidget.setFilter("Images (*.png *.jpg *.jpeg *.svg)")
+        logo_path = self.dlg.mQgsFileWidget.filePath()
+        
         user_inputs = {
             'target_layer': self.iface.mapCanvas(),
             'title': self.dlg.lineEdit.text(),
             'selected_layers': [x.strip() for x in self.dlg.lineEdit_2.text().split(", ")] if self.dlg.lineEdit_2.text() else [],
-            'auftraggeber': self.dlg.plainTextEdit.toPlainText(),
-            'planinhalt': self.dlg.plainTextEdit_2.toPlainText(),
+            'hintergrund_layers': [x.strip() for x in self.dlg.lineEdit_3.text().split(", ")] if self.dlg.lineEdit_3.text() else [],
+            'auftraggeber': self.dlg.lineEdit_5.text(),
+            'auftraggeber_logo': logo_path,
+            'auftraggeber_adresse': self.dlg.plainTextEdit.toPlainText(),
+            'hinweise': self.dlg.plainTextEdit_2.toPlainText(),
             'datengrundlage': self.dlg.lineEdit_3.text(),
             'hintergrundlage': self.dlg.lineEdit_4.text(),
             'sonstige': self.dlg.plainTextEdit_3.toPlainText(),
+            'vertragsnummer': self.dlg.lineEdit_6.text(),
+            'abschnitt': self.dlg.lineEdit_7.text(),
+            'planverfasser': self.dlg.lineEdit_8.text(),
+            'prüfer': self.dlg.lineEdit_9.text(),
+            'date': self.dlg.dateEdit.text(),
+            'stand': self.dlg.lineEdit_10.text(),
+            'vegetation_layers': [x.strip() for x in self.dlg.lineEdit_11.text().split(", ")] if self.dlg.lineEdit_11.text() else [],
+            'beschriftungen': self.dlg.plainTextEdit_4.toPlainText(),
+            'layout_name': self.dlg.lineEdit_12.text()
         }
         project = QgsProject.instance()
         layout_generator = LayoutGenerator(project, user_inputs)
         type_of_layout = self.dlg.comboBox.currentText()
-        if type_of_layout == 'Ganzseitig DINA4':
-            new_layout = layout_generator.create_standard_layout()
-        elif type_of_layout == 'Berichte':
-            new_layout = layout_generator.create_bericht_legende_unten_layout()
+        if type_of_layout == 'A4 Landscape Layout':
+            new_layout = layout_generator.create_a4_landscape_layout()
+            self.last_layout_name = 'A4 Layout'
+        elif type_of_layout == 'A3 Landscape Layout':
+            new_layout = layout_generator.create_a3_landscape_layout()
+            self.last_layout_name = 'A3 Layout'
+        elif type_of_layout == 'A3 Portrait Layout':
+            new_layout = layout_generator.create_a3_portrait_layout()
+            self.last_layout_name = 'A3 Layout'
+        elif type_of_layout == 'A4 Portrait Layout':
+            new_layout = layout_generator.create_a4_portrait_layout()
+            self.last_layout_name = 'A4 Layout'
         else:
-            new_layout = layout_generator.create_standard_layout()
+            new_layout = layout_generator.create_a3_landscape_layout()
+            self.last_layout_name = 'A3 Layout'
         
         if new_layout:
             self.iface.openLayoutDesigner(new_layout)
             
+    def update_map_list(self, layout_combo, map_combo):
+        map_combo.clear()
+        layout_name = layout_combo.currentText()
+        
+        if not layout_name:
+            return
+        
+        project = QgsProject.instance()
+        layout = project.layoutManager().layoutByName(layout_name)
+        
+        if layout:
+            map_count = 1
+            
+            for item in layout.items():
+                if isinstance(item, QgsLayoutItemMap):
+                    item_id = item.id()
+                    item_uuid = item.uuid()
+                    
+                    if item_id:
+                        display_name = f"Map: {item_id}"
+                    else:
+                        display_name = f"Map {map_count} (no ID)"
+                        map_count += 1
+                    map_combo.addItem(display_name, item_uuid)
+            
 
-    def open_multi_select_dialog(self):
+    def open_multi_select_dialog(self, target_line_edit):
         layers = self.iface.mapCanvas().layers()
         all_layer_names = [layer.name() for layer in layers if layer.isValid()]
 
@@ -213,15 +268,61 @@ class AutoMap:
             self.iface.messageBar().pushMessage("Error", "No valid layers found in the current project.", level=3)
             return
 
-        current_text = self.dlg.lineEdit_2.text()
+        current_text = target_line_edit.text()
         current_selected_layers = [x.strip() for x in current_text.split(", ")] if current_text else []
         dialog = MultiSelectDialog("Select Layers", all_layer_names, current_selected_layers, self.dlg)
 
         if dialog.exec_() == QDialog.Accepted:
             selected_results = dialog.get_selected_options()
             result_text = ", ".join(selected_results)
-            self.dlg.lineEdit_2.setText(result_text)
-    
+            target_line_edit.setText(result_text)
+            
+    def process(self):
+        tab_index = self.dlg.tabWidget.currentIndex()
+        if tab_index == 0:
+            self.load_layout()
+        else:
+            blattschnitt_tool = BlattschnittTool()
+            if tab_index == 1:
+                layer_name = self.dlg.comboBox_3.currentText()
+                layout_name = self.dlg.comboBox_2.currentText()
+                # map_id = self.dlg.lineEdit_12.text() if self.dlg.lineEdit_12.text() else 'map' 
+                map_uuid = self.dlg.comboBox_6.currentData()
+                
+                scale = float(self.dlg.lineEdit_14.text()) if self.dlg.lineEdit_14.text() else 500  # Default to 500 if empty
+                isNorth = self.dlg.checkBox_2.isChecked()  # Assuming there's a checkbox to indicate North orientation
+                #set up parameters for atlas
+                self.dlg.lineEdit_15.setText(str(self.dlg.lineEdit_14.text()))
+                # self.dlg.lineEdit_16.setText(map_id)
+                
+                progress = QProgressDialog("Computing...", "Cancel", 0, 100, self.iface.mainWindow())
+                progress.setWindowTitle("Processing Blattschnitt")
+                progress.setWindowModality(Qt.WindowModal)
+                progress.setMinimumDuration(0)
+                progress.setValue(0)
+                
+                blattschnitt_tool.generate_boxes(self.i, layer_name, layout_name, map_uuid, scale, isNorth, progress)
+                
+                progress.setValue(100)
+                self.last_blattschnitt_layer = blattschnitt_tool.layer_name
+                self.last_layout_name = layout_name
+                self.i += 1
+                self.dlg.checkBox.setChecked(True)
+            elif tab_index == 2:
+                poly_layer = self.dlg.comboBox_4.currentText()
+                layout_name = self.dlg.comboBox_5.currentText()
+                # map_id = self.dlg.lineEdit_16.text() if self.dlg.lineEdit_16.text() else 'map' 
+                map_uuid = self.dlg.comboBox_7.currentData()
+                scale = float(self.dlg.lineEdit_15.text()) if self.dlg.lineEdit_15.text() else 500  # Default to 500 if empty
+                idx_column = self.dlg.lineEdit_17.text() if self.dlg.lineEdit_17.text() else 'fid'
+                autorenumbering = self.dlg.checkBox.isChecked()
+                blattschnitt_tool.apply_atlas(poly_layer, layout_name, map_uuid, scale, idx_column, autorenumbering)
+                
+                project = QgsProject.instance()
+                layout = project.layoutManager().layoutByName(layout_name) if layout_name else None
+                if layout:
+                    self.iface.openLayoutDesigner(layout)
+                     
     def run(self):
         """Run method that performs all the real work"""
 
@@ -231,18 +332,73 @@ class AutoMap:
             self.first_start = False
             self.dlg = AutoMapDialog()
             self.dlg.lineEdit_2.setReadOnly(True)
-            self.dlg.toolButton.clicked.connect(self.open_multi_select_dialog)
+            self.dlg.lineEdit_3.setReadOnly(True)
+            self.dlg.lineEdit_11.setReadOnly(True)
+            self.dlg.toolButton.clicked.connect(lambda: self.open_multi_select_dialog(self.dlg.lineEdit_2))
+            self.dlg.toolButton_2.clicked.connect(lambda: self.open_multi_select_dialog(self.dlg.lineEdit_3))
+            self.dlg.toolButton_3.clicked.connect(lambda: self.open_multi_select_dialog(self.dlg.lineEdit_11))
+            self.dlg.dateEdit.setDate(QDate.currentDate())
+            # self.dlg.lineEdit_12.setText("map")
+            self.dlg.lineEdit_17.setText("fid")
+            self.dlg.checkBox_2.setChecked(True)
+            # self.dlg.lineEdit_16.setText("map")
 
         self.dlg.comboBox.clear()
-        layout = ['Ganzseitig DINA4', 'Berichte']
+        layout = ['A3 Landscape Layout', 'A3 Portrait Layout', 'A4 Landscape Layout', 'A4 Portrait Layout']
         self.dlg.comboBox.addItems(layout)
+        
+        project = QgsProject.instance()
+        layouts = project.layoutManager().layouts()
+        # if not layouts:
+        #     self.iface.messageBar().pushMessage("Error", "No layouts found in the current project.", level=3)
+        #     return
+        layout_names = [layout.name() for layout in layouts]
+        self.dlg.comboBox_2.clear()
+        self.dlg.comboBox_2.addItems(layout_names)
+        if self.last_layout_name and (self.last_layout_name in layout_names):
+            self.dlg.comboBox_2.setCurrentText(self.last_layout_name)
+            
+        self.dlg.comboBox_2.currentTextChanged.connect(
+            lambda: self.update_map_list(self.dlg.comboBox_2, self.dlg.comboBox_6)
+        )
+        self.update_map_list(self.dlg.comboBox_2, self.dlg.comboBox_6)
+        
+        self.dlg.comboBox_5.currentTextChanged.connect(
+            lambda: self.update_map_list(self.dlg.comboBox_5, self.dlg.comboBox_7)
+        )
+        self.update_map_list(self.dlg.comboBox_5, self.dlg.comboBox_7)
+        
+        
+        line_layer_names = []
+        for layer_id, layer in project.mapLayers().items():
+            if isinstance(layer, QgsVectorLayer) and (layer.geometryType() == QgsWkbTypes.LineGeometry or layer.geometryType() == QgsWkbTypes.PointGeometry):
+                line_layer_names.append(layer.name())
+        self.dlg.comboBox_3.clear()
+        self.dlg.comboBox_3.addItems(line_layer_names)
+        
+        polygon_layer_names = []
+        for layer_id, layer in project.mapLayers().items():
+            if isinstance(layer, QgsVectorLayer) and layer.geometryType() == QgsWkbTypes.PolygonGeometry:
+                polygon_layer_names.append(layer.name())
+        self.dlg.comboBox_4.clear()
+        self.dlg.comboBox_4.addItems(polygon_layer_names)
+        
+        if self.last_blattschnitt_layer and (self.last_blattschnitt_layer in polygon_layer_names):
+            self.dlg.comboBox_4.setCurrentText(self.last_blattschnitt_layer)
+        
+        self.dlg.comboBox_5.clear()
+        self.dlg.comboBox_5.addItems(layout_names)
+        if self.last_layout_name and (self.last_layout_name in layout_names):
+            self.dlg.comboBox_5.setCurrentText(self.last_layout_name)
+        
 
         # show the dialog
-        self.dlg.show()
+        # self.dlg.show()
+        self.dlg.setResult(0)
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
-            self.load_layout()
+            self.process()

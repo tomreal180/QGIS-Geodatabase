@@ -3,8 +3,10 @@ from PyQt5.QtGui import QFontMetricsF
 import os
 
 from .dynamicTools import register_functions
-from .StandardLayout import create_standard_A4_layout
-from .Layout_Bericht_Unten import create_layout_bericht_unten
+# from .Layout.StandardLayout import create_standard_A4_layout
+# from .Layout.Layout_Bericht_Unten import create_layout_bericht_unten
+from .Layout.LayoutBuilder import build_layout
+# from .Layout.A3_layout import create_layout_a3
 
 class LayoutGenerator:
 
@@ -24,7 +26,7 @@ class LayoutGenerator:
         settings = QgsLayoutExporter.PdfExportSettings()
         exporter.exportToPdf(output_path, settings)
     
-    def calculateHeight(self, item, line_spacing=1.0):
+    def calculateHeight(self, item, target_width_mm=None, line_spacing=1.0):
         """
         Returns the height of a layout item in millimeters.
         Usage: calculateHeight('Item')
@@ -32,7 +34,7 @@ class LayoutGenerator:
         # Text, Font und Breite des Labels
         text = item.text()
         font = item.font()
-        width_mm = item.sizeWithUnits().width()
+        width_mm = target_width_mm if target_width_mm is not None else item.sizeWithUnits().width()
         if not text.strip():
             return 0
 
@@ -83,51 +85,144 @@ class LayoutGenerator:
         height_mm = total_height_px * 25.4 / 96
         return height_mm
         
-    def create_standard_layout(self):
-        self.variables ={
-            "custom_page_dist_left_vq": 3,
-            "custom_page_dist_right_vq": 3,
-            "custom_page_dist_top_vq": 3,
-            "custom_page_dist_bottom_vq": 3,
-            "custom_item_dist_left_vq": 3,
-            "custom_item_dist_right_vq": 3,
-            "custom_item_dist_top_vq": 3,
-            "custom_item_dist_bottom_vq": 3,
-            "custom_frame_line_width_vq": 0.3,
-            "custom_dist_title_text_vq": 2,
-            "custom_frame_width_vq": 60,
-            "custom_north_arrow_width_vq": 15,
-            "custom_north_arrow_height_vq": 20,
-            "custom_scale_width_vq": 35,
-            "custom_scale_height_vq": 9,
-            "custom_scale_label_space_vq": 2,
-            "custom_scale_bar_height_vq": 2,
-            "custom_page_size_width_vq": 297,
-            "custom_page_size_height_vq": 210,
-        }
-        return create_standard_A4_layout(self)
+    def calculateWidth(self, item):
+        if not item or not isinstance(item, QgsLayoutItemLabel):
+            return 0
 
-    def create_bericht_legende_unten_layout(self):
-        self.variables = {
-            "custom_page_size_width_blu": 169.03,
-            "custom_map_height_blu": 120.535,
-            "custom_page_dist_left_blu": 3,
-            "custom_page_dist_right_blu": 3,
-            "custom_page_dist_top_blu": 3,
-            "custom_page_dist_bottom_blu": 3,
-            "custom_item_dist_left_blu": 3,
-            "custom_item_dist_right_blu": 3,
-            "custom_item_dist_top_blu": 3,
-            "custom_item_dist_bottom_blu": 3,
-            "custom_frame_line_width_blu": 0.3,
-            "custom_dist_title_text_blu": 2,
-            "custom_frame_width_blu": 40,
-            "custom_north_arrow_width_blu": 5,
-            "custom_north_arrow_height_blu": 8,
-            "custom_scale_width_blu": 35,
-            "custom_scale_height_blu": 9,
-            "custom_scale_label_space_blu": 2,
-            "custom_scale_bar_height_blu": 2,
-        }
-        return create_layout_bericht_unten(self)
+        text = item.text()
+        font = item.font()
+        if not text.strip():
+            return 0
+
+        font_metrics = QFontMetricsF(font)
+        # get max line width in pixels
+        widths_px = [font_metrics.horizontalAdvance(line) for line in text.split("\n")]
+        max_width_px = max(widths_px) if widths_px else 0
+
+        # add 5% padding
+        max_width_px *= 1.04
+
+        # convert px back to mm (96 dpi assumption)
+        width_mm = max_width_px * 25.4 / 96
+
+        return width_mm
     
+    
+    def create_a4_landscape_layout(self):
+        self.variables = {
+            "custom_format": "A4",
+            "custom_page_dist_left": 3,
+            "custom_page_dist_right": 3,
+            "custom_page_dist_top": 3,
+            "custom_page_dist_bottom": 3,
+            "custom_item_dist_left": 1,
+            "custom_item_dist_right": 1,
+            "custom_item_dist_top": 1,
+            "custom_item_dist_bottom": 1,
+            "custom_frame_line_width": 0.1,
+            "custom_dist_title_text_small": 2,
+            "custom_dist_title_text": 0.5,
+            "custom_frame_height": 27,          
+            "custom_north_arrow_width": 7.5,   
+            "custom_north_arrow_height": 12.5,  
+            "custom_scale_width": 30,           
+            "custom_scale_height": 7.5,        
+            
+            "custom_scale_label_space": 2,
+            "custom_scale_bar_height": 2,
+            
+            "custom_page_size_width": 297,
+            "custom_page_size_height": 210,
+            "item_dist_1": 20,
+            "item_dist_2": 10,
+            "item_dist": 5
+        }
+        # return create_standard_A4_layout(self)
+        return build_layout(self)
+    
+    def create_a4_portrait_layout(self):
+        self.variables = {
+            "custom_format": "A4",
+            "custom_page_dist_left": 3,
+            "custom_page_dist_right": 3,
+            "custom_page_dist_top": 3,
+            "custom_page_dist_bottom": 3,
+            "custom_item_dist_left": 1,
+            "custom_item_dist_right": 1,
+            "custom_item_dist_top": 1,
+            "custom_item_dist_bottom": 1,
+            "custom_frame_line_width": 0.1,
+            "custom_dist_title_text_small": 2,
+            "custom_dist_title_text": 0.5,
+            "custom_frame_height": 30,
+            "custom_north_arrow_width": 7.5,
+            "custom_north_arrow_height": 12.5,
+            "custom_scale_width": 30,
+            "custom_scale_height": 7.5,
+            "custom_scale_label_space": 2,
+            "custom_scale_bar_height": 2,
+            "custom_page_size_width": 210,
+            "custom_page_size_height": 297,
+            "item_dist_1": 10,
+            "item_dist_2": 1,
+            "item_dist": 0.25
+        }
+        return build_layout(self)
+
+    def create_a3_landscape_layout(self):
+        self.variables ={
+            "custom_format": "A3",
+            "custom_page_dist_left": 3,
+            "custom_page_dist_right": 3,
+            "custom_page_dist_top": 3,
+            "custom_page_dist_bottom": 3,
+            "custom_item_dist_left": 1,
+            "custom_item_dist_right": 1,
+            "custom_item_dist_top": 1,
+            "custom_item_dist_bottom": 1,
+            "custom_frame_line_width": 0.1,
+            "custom_dist_title_text_small": 2,
+            "custom_dist_title_text": 0.5,
+            "custom_frame_height": 35,
+            "custom_north_arrow_width": 9,
+            "custom_north_arrow_height": 15,
+            "custom_scale_width": 35,
+            "custom_scale_height": 9,
+            "custom_scale_label_space": 2,
+            "custom_scale_bar_height": 2,
+            "custom_page_size_width": 420,
+            "custom_page_size_height": 297,
+            "item_dist_1": 50,
+            "item_dist_2": 40,
+            "item_dist": 30
+        }
+        return build_layout(self)
+    
+    def create_a3_portrait_layout(self):
+        self.variables ={
+            "custom_format": "A3",
+            "custom_page_dist_left": 3,
+            "custom_page_dist_right": 3,
+            "custom_page_dist_top": 3,
+            "custom_page_dist_bottom": 3,
+            "custom_item_dist_left": 1,
+            "custom_item_dist_right": 1,
+            "custom_item_dist_top": 1,
+            "custom_item_dist_bottom": 1,
+            "custom_frame_line_width": 0.1,
+            "custom_dist_title_text_small": 2,
+            "custom_dist_title_text": 0.5,
+            "custom_frame_height": 35,
+            "custom_north_arrow_width": 9,
+            "custom_north_arrow_height": 15,
+            "custom_scale_width": 35,
+            "custom_scale_height": 9,
+            "custom_scale_label_space": 2,
+            "custom_scale_bar_height": 2,
+            "custom_page_size_width": 297,
+            "custom_page_size_height": 420,
+            "item_dist_1": 50,
+            "item_dist_2": 25,
+            "item_dist": 10
+        }
+        return build_layout(self)
